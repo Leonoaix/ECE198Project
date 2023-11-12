@@ -160,6 +160,219 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+      // Start conversion for Channel 6 (PA0)
+
+      now = HAL_GetTick();
+
+      joystick_val[0] = ADC_READ(ADC_CHANNEL_6);//x_axis
+      joystick_val[1] = ADC_READ(ADC_CHANNEL_7);//y_axis
+      joystick_val[2] = ADC_READ(ADC_CHANNEL_8);//Switch button
+
+      if(screen == SELECTING) {
+          if (!went_right && joystick_val[0] > 4000) {
+              went_right = 1;
+          } else if (went_right && joystick_val[0] < 4000) {
+              if (cursor_y)
+                  cursor_x = (cursor_x + 4) % 16;
+              else
+                  cursor_x = 12;
+              went_right = 0;
+          }
+          if (!went_left && joystick_val[0] < 20) {
+              went_left = 1;
+          } else if (went_left && joystick_val[0] > 20) {
+              if (cursor_y)
+                  cursor_x = (cursor_x - 4) % 16;
+              else
+                  cursor_x = 8;
+              went_left = 0;
+          }
+
+
+          if (pressed == 0 && joystick_val[2] < 20) {
+              pressed = 1;
+              if (cursor_y) {
+                  time[time_state] = (time[time_state] + adding[cursor_x / 4]) % time_limit[time_state];
+              }
+              else {
+                  if (cursor_x == 8) {
+                      time_state++;
+                      if(time_state > 2){
+                          time_state = 2;
+                          screen = CONFIRMING;
+                          cursor_x = 1;
+                      }
+                  } else {
+                      time_state--;
+                      time_state = time_state < 0 ? 0 : time_state;
+                  }
+              }
+          } else if (pressed && joystick_val[2] > 20) {
+              pressed = 0;
+          }
+
+
+          if (!went_y && joystick_val[1] > 4000) {
+              went_y = 1;
+          } else if (went_y && joystick_val[1] < 4000) {
+              cursor_y = 0;
+              cursor_x = 8;
+              went_y = 0;
+          }
+          if (!went_y && joystick_val[1] < 20) {
+              went_y = 1;
+          } else if (went_y && joystick_val[1] > 20) {
+              cursor_y = 1;
+              cursor_x = 0;
+              went_y = 0;
+          }
+      }
+      else if(screen == CONFIRMING){
+          if (!went_right && joystick_val[0] > 4000) {
+              went_right = 1;
+          } else if (went_right && joystick_val[0] < 4000) {
+              cursor_x = 9;
+              went_right = 0;
+          }
+          if (!went_left && joystick_val[0] < 20) {
+              went_left = 1;
+          } else if (went_left && joystick_val[0] > 20) {
+              cursor_x = 1;
+              went_left = 0;
+          }
+
+          if (pressed == 0 && joystick_val[2] < 20) {
+              pressed = 1;
+              if(cursor_x == 9){
+                  screen = SELECTING;
+                  cursor_x = 0;
+                  cursor_y = 1;
+              }
+              else if (cursor_x == 1){
+                  screen = COUNTING;
+                  start_time = now;
+                  total_time = (time[0]*3600 + time[1]*60 + time[2])*1000;
+                  servo_state = 1;
+                  remaining_pause = 2;
+                  cursor_x = 6;
+              }
+          } else if (pressed && joystick_val[2] > 20) {
+              pressed = 0;
+          }
+      }
+      else if(screen == COUNTING){
+            if(now-start_time > total_time){
+                screen = REMINDING;
+                servo_state = 0;
+            }
+            time_remaining = total_time - (now - start_time);
+
+            if (!went_right && joystick_val[0] > 4000) {
+              went_right = 1;
+            } else if (went_right && joystick_val[0] < 4000) {
+              cursor_x = 7;
+              went_right = 0;
+            }
+            if (!went_left && joystick_val[0] < 20) {
+              went_left = 1;
+            } else if (went_left && joystick_val[0] > 20) {
+              cursor_x = 6;
+              went_left = 0;
+            }
+
+            if (pressed == 0 && joystick_val[2] < 20) {
+              pressed = 1;
+              if(cursor_x == 7 && remaining_pause > 0){
+                  screen = PAUSING;
+                  servo_state = 0;
+                  remaining_pause--;
+              }
+            } else if (pressed && joystick_val[2] > 20) {
+              pressed = 0;
+            }
+      }
+      else if(screen == PAUSING){
+          if (pressed == 0 && joystick_val[2] < 20) {
+              pressed = 1;
+              screen = COUNTING;
+              servo_state = 1;
+              total_time = time_remaining;
+              start_time = now;
+              cursor_x = 6;
+          } else if (pressed && joystick_val[2] > 20) {
+              pressed = 0;
+          }
+      }
+      else{
+          if (pressed == 0 && joystick_val[2] < 20) {
+              pressed = 1;
+              screen = SELECTING;
+              cursor_x = 0;
+              cursor_y = 1;
+              time[0] = time[1] = time[2] = 0;
+              time_state = 0;
+          } else if (pressed && joystick_val[2] > 20) {
+              pressed = 0;
+          }
+      }
+//
+      if(now - lastRefreshTick >= 1000 / refreshRate){
+          HD44780_Clear();
+          if(screen == SELECTING) {
+              HD44780_SetCursor(0, 1);
+              HD44780_PrintStr(" +01 +05 +10 +20");
+              HD44780_SetCursor(0, 0);
+              sprintf(printout, "%s:%d", time_print[time_state], time[time_state]);
+              HD44780_PrintStr(printout);
+              HD44780_SetCursor(9, 0);
+              HD44780_PrintStr("->  <-");
+              HD44780_SetCursor(cursor_x, cursor_y);
+              HD44780_Blink();
+          }
+          else if(screen == CONFIRMING){
+              HD44780_SetCursor(0,0);
+              sprintf(printout, "%d:%d:%d", time[0], time[1], time[2]);
+              HD44780_PrintStr(printout);
+              HD44780_SetCursor(0,1);
+              HD44780_PrintStr("  Start   Back");
+              HD44780_SetCursor(cursor_x, 1);
+              HD44780_Blink();
+          }
+          else if(screen == COUNTING){
+              HD44780_SetCursor(0,0);
+              sprintf(printout, "Left:   Pauses:%d", remaining_pause);
+              HD44780_PrintStr(printout);
+              HD44780_SetCursor(0,1);
+              sprintf(printout, "%d:%d:%d", time_remaining/1000/3600,
+                      time_remaining/1000%3600/60, time_remaining/1000%3600%60);
+              HD44780_PrintStr(printout);
+              HD44780_SetCursor(cursor_x, 0);
+              HD44780_Blink();
+          }
+          else if(screen == PAUSING){
+              HD44780_SetCursor(0,0);
+              HD44780_PrintStr(" Restart");
+              HD44780_SetCursor(0,1);
+              sprintf(printout, "%d:%d:%d", time_remaining/1000/3600,
+                      time_remaining/1000%3600/60, time_remaining/1000%3600%60);
+              HD44780_PrintStr(printout);
+              HD44780_SetCursor(0,0);
+              HD44780_Blink();
+          }
+          else{
+              HD44780_SetCursor(0,0);
+              HD44780_PrintStr("Over");
+              HD44780_SetCursor(0,1);
+              HD44780_PrintStr(" Restart");
+              HD44780_SetCursor(0,1);
+              HD44780_Blink();
+          }
+          lastRefreshTick = now;
+      }
+      __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1250 - servo_state*500);
 
   }
   /* USER CODE END 3 */
