@@ -122,6 +122,35 @@ int main(void) {
     MX_TIM3_Init();
     MX_TIM2_Init();
     /* USER CODE BEGIN 2 */
+    char printout[16];
+
+    long refreshRate = 2;
+    uint32_t lastRefreshTick = HAL_GetTick();
+    uint32_t now;
+
+    uint16_t joystick_val[3];
+    char cursor_x = 0;
+    _Bool cursor_y = 1;
+    _Bool went_right = 0;
+    _Bool went_left = 0;
+    _Bool went_y = 0;
+    _Bool pressed = 0;
+
+    char time[3] = {0};
+    char time_limit[3] = {24, 60, 60};
+    char *time_print[] = {"hr ", "min", "sec"};
+    char time_state = 0;
+    unsigned short adding[] = {1, 5, 10, 20};
+    unsigned int time_remaining;
+    uint32_t start_time;
+    unsigned int total_time;
+
+    int remaining_pause;
+
+    _Bool servo_state = 0;
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+
+    enum Page screen = SELECTING;
 
     /* USER CODE END 2 */
 
