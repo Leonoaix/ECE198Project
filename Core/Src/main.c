@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "liquidcrystal_i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,7 +55,7 @@ UART_HandleTypeDef huart1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-static void SystemClock_Config(void);
+void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
@@ -92,79 +93,76 @@ int ADC_READ(uint32_t ADC_CHANNEL) {
   * @brief  The application entry point.
   * @retval int
   */
-int main(void) {
-    /* USER CODE BEGIN 1 */
+int main(void)
+{
+  /* USER CODE BEGIN 1 */
 
-    /* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-    /* MCU Configuration--------------------------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
-    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-    HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-    /* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-    /* USER CODE END Init */
+  /* USER CODE END Init */
 
-    /* Configure the system clock */
-    SystemClock_Config();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-    /* USER CODE BEGIN SysInit */
+  /* USER CODE BEGIN SysInit */
 
-    /* USER CODE END SysInit */
+  /* USER CODE END SysInit */
 
-    /* Initialize all configured peripherals */
-    MX_GPIO_Init();
-    MX_DMA_Init();
-    MX_I2C1_Init();
-    MX_ADC1_Init();
-    MX_USART1_UART_Init();
-    MX_TIM3_Init();
-    MX_TIM2_Init();
-    /* USER CODE BEGIN 2 */
-    char printout[16];
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_I2C1_Init();
+  MX_ADC1_Init();
+  MX_USART1_UART_Init();
+  MX_TIM3_Init();
+  MX_TIM2_Init();
+  /* USER CODE BEGIN 2 */
+  char printout[16];
 
-    long refreshRate = 2;
-    uint32_t lastRefreshTick = HAL_GetTick();
-    uint32_t now;
+  long refreshRate = 2;
+  uint32_t lastRefreshTick = HAL_GetTick();
+  uint32_t now;
+  HD44780_Init(2);
 
-    uint16_t joystick_val[3];
-    char cursor_x = 0;
-    _Bool cursor_y = 1;
-    _Bool went_right = 0;
-    _Bool went_left = 0;
-    _Bool went_y = 0;
-    _Bool pressed = 0;
+  uint16_t joystick_val[3];
+  char cursor_x = 0;
+  _Bool cursor_y = 1;
+  _Bool went_right = 0;
+  _Bool went_left = 0;
+  _Bool went_y = 0;
+  _Bool pressed = 0;
 
-    char time[3] = {0};
-    char time_limit[3] = {24, 60, 60};
-    char *time_print[] = {"hr ", "min", "sec"};
-    char time_state = 0;
-    unsigned short adding[] = {1, 5, 10, 20};
-    unsigned int time_remaining;
-    uint32_t start_time;
-    unsigned int total_time;
+  char time[3] = {0};
+  char time_limit[3] = {24, 60,60};
+  char* time_print[] = {"hr ", "min", "sec"};
+  char time_state = 0;
+  unsigned short adding[] = {1, 5, 10, 20};
+  unsigned int time_remaining;
+  uint32_t start_time;
+  unsigned int total_time;
 
-    int remaining_pause;
+  int remaining_pause;
 
-    _Bool servo_state = 0;
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  _Bool servo_state = 0;
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 
-    enum Page screen = SELECTING;
+  enum Page screen = SELECTING;
 
-    /* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-    /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
-    while (1) {
-        /* USER CODE END WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1) {
 
-        /* USER CODE BEGIN 3 */
-        // Start conversion for Channel 6 (PA0)
-
-
-        /* USER CODE END 3 */
-    }
+  }
+  /* USER CODE END 3 */
 }
 
 /**
